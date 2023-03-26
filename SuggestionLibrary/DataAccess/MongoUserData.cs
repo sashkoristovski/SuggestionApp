@@ -1,6 +1,4 @@
-﻿
-
-namespace SuggestionLibrary.DataAccess;
+﻿namespace SuggestionLibrary.DataAccess;
 
 public class MongoUserData : IUserData
 {

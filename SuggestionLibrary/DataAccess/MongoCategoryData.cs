@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
-
 namespace SuggestionLibrary.DataAccess;
 
 public class MongoCategoryData : ICategoryData
@@ -21,6 +20,7 @@ public class MongoCategoryData : ICategoryData
         {
             var results = await _categories.FindAsync(_ => true);
             output = results.ToList();
+
             _cache.Set(CacheName, output, TimeSpan.FromDays(1));
         }
 

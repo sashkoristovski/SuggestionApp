@@ -17,6 +17,7 @@ public class MongoSuggestionData : ISuggestionData
         _db = db;
         _userData = userData;
         _cache = cache;
+        _suggestions = db.SuggestionCollection;
     }
     /// <summary>
     /// Get all suggestion from database and stored into cache
@@ -54,22 +55,26 @@ public class MongoSuggestionData : ISuggestionData
         return results.FirstOrDefault();
     }
     /// <summary>
-    /// Get all suggestions waiting for approval
+    /// Get all suggestions waiting for approval Comments
     /// </summary>
     /// <returns></returns>
     public async Task<List<SuggestionModel>> GetAllSuggestionsWaitingForApproval()
     {
         var output = await GetAllSuggestions();
-        return output.Where(x => x.ApprovedForRelease == false && x.Rejected == false).ToList();
+        return output.Where(x =>
+            x.ApprovedForRelease == false
+                && x.Rejected == false).ToList();
     }
     public async Task UpdateSuggestion(SuggestionModel suggestion)
     {
         await _suggestions.ReplaceOneAsync(s => s.Id == suggestion.Id, suggestion);
+        _cache.Remove(CacheName);
     }
 
     public async Task UpvoteSuggestion(string suggestionId, string userId)
     {
         var client = _db.Client;
+
         using var session = await client.StartSessionAsync();
         session.StartTransaction();
         try
@@ -86,7 +91,7 @@ public class MongoSuggestionData : ISuggestionData
             await suggestionsInTransaction.ReplaceOneAsync(s => s.Id == suggestionId, suggestion);
 
             var usersInTransaction = db.GetCollection<UserModel>(_db.UserCollectionName);
-            var user = await _userData.GetUser(suggestion.Author);
+            var user = await _userData.GetUser(suggestion.Author.Id);
             if (isUpvote)
             {
                 user.VotedOnSuggestions.Add(new BasicSuggestionModel(suggestion));
@@ -100,7 +105,7 @@ public class MongoSuggestionData : ISuggestionData
             await session.CommitTransactionAsync();
             _cache.Remove(CacheName);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             await session.AbortTransactionAsync();
             throw;
@@ -120,13 +125,13 @@ public class MongoSuggestionData : ISuggestionData
             await suggestionsInTransaction.InsertOneAsync(suggestion);
 
             var usersInTransaction = db.GetCollection<UserModel>(_db.UserCollectionName);
-            var user = await _userData.GetUser(suggestion.Author);
+            var user = await _userData.GetUser(suggestion.Author.Id);
             user.AuthoredSuggestions.Add(new BasicSuggestionModel(suggestion));
             await usersInTransaction.ReplaceOneAsync(u => u.Id == user.Id, user);
 
             await session.CommitTransactionAsync();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
 
             throw;

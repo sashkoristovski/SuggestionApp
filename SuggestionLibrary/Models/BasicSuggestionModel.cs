@@ -1,5 +1,4 @@
-﻿
-namespace SuggestionLibrary.Models;
+﻿namespace SuggestionLibrary.Models;
 
 public class BasicSuggestionModel
 {
@@ -7,10 +6,8 @@ public class BasicSuggestionModel
     public string Id { get; set; }
     public string Suggestion { get; set; }
 
-    public BasicSuggestionModel()
-    {
-        
-    }
+    public BasicSuggestionModel() {}
+
     public BasicSuggestionModel( SuggestionModel suggestion)
     {
         Id = suggestion.Id;
