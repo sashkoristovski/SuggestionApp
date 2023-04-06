@@ -7,13 +7,15 @@
 @inject NavigationManager navManager
 @inject ProtectedSessionStorage sessionStorage
 
-<h1>Traning Suggestion</h1>
+<h1>Suggestion App</h1>
 <div>
     <button>Suggestion</button>
 </div>
 
 <div>
     <div>@suggestions?.Count Suggestions</div>
+    
+
     <div>
         <button @onclick="(() => OrderByNew(true))">New</button>
         <button @onclick="(() => OrderByNew(false))">Popular</button>
@@ -30,7 +32,6 @@
             <Virtualize Items="@suggestions" Context="s" OverscanCount="10">
                 <div>   
                     <div>
-                        @* TO-DO first log in then vote*@
                         <div>@GetUpvoteTopText(s)</div>
                         <span class ="oi oi-caret-top"></span>
                         <div>@GetUpvoteBottomText(s)</div>
@@ -85,7 +86,7 @@
 
     private string selectedCategory = "All";
     private string selectedStatus = "All";
-    private string searchText = "";
+    private string searchText = string.Empty;
     bool isSortedByNew = true;
 
     protected async override Task OnInitializedAsync()
