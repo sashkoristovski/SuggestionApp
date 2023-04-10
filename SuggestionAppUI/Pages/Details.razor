@@ -25,8 +25,8 @@
                  <div class="suggestion-detail-text">
                      <div class="fw-bold mb-2 suggestion-detail-suggestion">@suggestion.Suggestion</div>
                      <div class="mb-2 suggestion-detail-author">@suggestion.Author.DisplayName</div>
-                     <div class="mb-2">@suggestion.Description</div>
-                     <div class="suggestion-entry-text-category">
+                     <div class="mb-2 d-none d-md-block">@suggestion.Description</div>
+                     <div class="suggestion-entry-text-category d-none d-md-block">
                          @suggestion.Category.CategoryName
                      </div>
                  </div>
@@ -35,7 +35,12 @@
                 <div class="col-1 close-button-section">
                     <button class="btn btn-close" @onclick="ClosePage"></button>
                 </div>
-
+            </div>
+            <div class="row d-block d-md-none">
+                <div class="suggestion-detail-text">
+                    <div>@suggestion.Description</div>
+                    <div class="suggestion-entry-text-category">@suggestion.Category.CategoryName</div>
+                </div>
             </div>
         }
     </div>
@@ -102,140 +107,4 @@
 }
 
 
-@code {
-    [Parameter]
-    public string Id { get; set; }
 
-    private SuggestionModel suggestion;
-    private UserModel loggedInUser;
-
-    private List<StatusModel> statuses;
-    private string settingStatus = string.Empty;
-    private string urlText = "";
-
-
-    protected async override Task OnInitializedAsync()
-    {
-        suggestion = await suggestionData.GetSuggestion(Id);
-        loggedInUser = await authProvider.GetUserFromAuth(userData);
-        statuses = await statusData.GetAllStatuses();
-    }
-
-    private async Task CompleteSetStatus()
-    {
-        switch (settingStatus)
-        {
-            case "completed":
-                if (string.IsNullOrWhiteSpace(urlText))
-                {
-                    return;
-                }
-                suggestion.SuggestionStatus = statuses.Where(s => s.StatusName.ToLower() == settingStatus.ToLower()).First();
-                suggestion.OwnerNotes = $"You are right, this is an important topic for developers. We created a resource about it here: <a href ='{urlText}' target='_blank'>{urlText}</a>";
-                break;
-            case "watching":
-                suggestion.SuggestionStatus = statuses.Where(s => s.StatusName.ToLower() == settingStatus.ToLower()).First();
-                suggestion.OwnerNotes = "We noticed the interest this suggestion is getting! If more people are interested we will address this topic in an upcoming resource.";
-                break;
-            case "upcoming":
-                suggestion.SuggestionStatus = statuses.Where(s => s.StatusName.ToLower() == settingStatus.ToLower()).First();
-                suggestion.OwnerNotes = "Great suggestion! We have a resource in the pipeline to address this topic.";
-                break;
-            case "dismissed":
-                suggestion.SuggestionStatus = statuses.Where(s => s.StatusName.ToLower() == settingStatus.ToLower()).First();
-                suggestion.OwnerNotes = "Sometimes a good idea doesn't fit within our scope and vision. This is one of those ideas.";
-                break;
-            default:
-                return;
-        }
-        settingStatus = null;
-        await suggestionData.UpdateSuggestion(suggestion);
-    }
-
-    private void ClosePage()
-    {
-        navManager.NavigateTo("/");
-    }
-    private string GetUpvoteTopText()
-    {
-        if (suggestion.UserVotes?.Count >0)
-        {
-            return suggestion.UserVotes.Count.ToString("00");
-        }
-        else
-        {
-            if (suggestion.Author.Id == loggedInUser?.Id)
-            {
-                return "Awaitng";
-            }
-            else
-            {
-                return "Click To";
-
-            }
-        }
-    }
-    private string GetUpvoteBottomText()
-    {
-        if (suggestion.UserVotes?.Count >1)
-        {
-            return "Upvotes";
-        }
-        else
-        {
-            return "Upvote";
-        }
-    }
-
-    private async Task VoteUp()
-    {
-        if (loggedInUser is not null)
-        {
-            if (suggestion.Author.Id == loggedInUser.Id)
-            {
-                // Can't vote on your own suggestion
-                return;
-            }
-            if (suggestion.UserVotes.Add(loggedInUser.Id) == false)
-            {
-                suggestion.UserVotes.Remove(loggedInUser.Id);
-            }
-            await suggestionData.UpvoteSuggestion(suggestion.Id, loggedInUser.Id);
-        }
-        else
-        {
-            navManager.NavigateTo("/MicrosoftIdentity/Account/SignIn", true);
-        }
-    }
-    private string GetVoteClass()
-    {
-        if (suggestion.UserVotes is null || suggestion.UserVotes.Count ==0)
-        {
-            return "suggestion-detail-no-votes";
-        }
-        else if(suggestion.UserVotes.Contains(loggedInUser?.Id))
-        {
-            return "suggestion-detail-voted";
-        }
-        else
-        {
-            return "sugestion-detail-not-voted";
-        }
-    }
-    private string GetStatusClass()
-    {
-        if (suggestion is null || suggestion.SuggestionStatus is null)
-        {
-            return "suggestion-detail-status-none";
-        }
-        string ouput = suggestion.SuggestionStatus.StatusName switch
-        {
-            "Completed" => "suggestion-detail-status-completed",
-            "Watching" => "suggestion-detail-status-watching",
-            "Upcoming" => "suggestion-detail-status-upcoming",
-            "Dismissed" => "suggestion-detail-status-dismissed",
-            _ => "suggestion-detail-status-none",
-        };
-        return ouput;
-    }
-}
