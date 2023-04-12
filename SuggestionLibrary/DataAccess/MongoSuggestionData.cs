@@ -26,7 +26,7 @@ public class MongoSuggestionData : ISuggestionData
     public async Task<List<SuggestionModel>> GetAllSuggestions()
     {
         var output = _cache.Get<List<SuggestionModel>>(CacheName);
-        if (output == null)
+        if (output is null)
         {
             var results = await _suggestions.FindAsync(s => s.Archived == false);
             output = results.ToList();

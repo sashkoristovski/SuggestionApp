@@ -582,7 +582,13 @@ a:hover, .btn-link:hover {
         min-height: 100px;
     }
 }
+@media screen and (max-width: 460px) {
 
+    .suggestion-entry-text-category {
+        width: 50%;
+        flex-flow: nowrap;
+    }
+}
 @media screen and (max-width: 767px) {
     .search-box {
         --bs-gutter-x: inherit;

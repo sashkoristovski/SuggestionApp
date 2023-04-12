@@ -13,12 +13,11 @@ public partial class Index
     private bool isSortedByNew = true;
     private bool showCategories = false;
     private bool showStatuses = false;
+
     protected async override Task OnInitializedAsync()
     {
-        
         categories = await categoryData.GetAllCategories();
         statuses = await statusData.GetAllStatuses();
-        suggestions = await suggestionData.GetAllSuggestions();
         await LoadAndVerifyUser();
     }
 
@@ -114,10 +113,13 @@ public partial class Index
     {
         var stringResults = await sessionStorage.GetAsync<string>(nameof(selectedCategory));
         selectedCategory = stringResults.Success ? stringResults.Value : "All";
+
         stringResults = await sessionStorage.GetAsync<string>(nameof(selectedStatus));
         selectedStatus = stringResults.Success ? stringResults.Value : "All";
+
         stringResults = await sessionStorage.GetAsync<string>(nameof(searchText));
-        searchText = stringResults.Success ? stringResults.Value : "All";
+        searchText = stringResults.Success ? stringResults.Value : "";
+
         var boolResults = await sessionStorage.GetAsync<bool>(nameof(isSortedByNew));
         isSortedByNew = boolResults.Success ? boolResults.Value : true;
         
@@ -125,7 +127,7 @@ public partial class Index
 
     private async Task FilterSuggestions()
     {
-        
+
         var output = await suggestionData.GetApprovedSuggestions();
         if (selectedCategory != "All")
         {
@@ -281,7 +283,7 @@ public partial class Index
             return "suggestion-entry-not-voted";
         }
     }
-
+    // CSS classes
     private string GetSuggestionStatusClass(SuggestionModel suggestion)
     {
         if (suggestion is null || suggestion.SuggestionStatus is null)
