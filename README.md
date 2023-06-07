@@ -1,1 +1,1 @@
-#  Suggestion Application. The project is created with .NET Blazor web framework, Also in the project is used Mongo DB database, Microsoft Azure B2C service for user registration and authentication .
+#  Suggestion Application.The project is created with the .NET Blazer web framework, Also the project used Mongo DB database, and Microsoft Azure B2C service for user registration and authentication.
